@@ -22,7 +22,7 @@ public class UserDAO {
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return new User(
-                            rs.getString("user_id"),
+                            rs.getInt("user_id"), // Fixed: rs.getInt for integer primary key
                             rs.getString("username"),
                             rs.getString("password_hash"),
                             rs.getString("full_name"),
@@ -35,16 +35,16 @@ public class UserDAO {
     }
 
     public boolean createUser(User user) throws SQLException {
-        String sql = "INSERT INTO users (user_id, username, password_hash, full_name, role) VALUES (?, ?, ?, ?, ?)";
+        // Removed user_id from the INSERT statement to let MySQL AUTO_INCREMENT handle it
+        String sql = "INSERT INTO users (username, password_hash, full_name, role) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            stmt.setString(1, user.getUserId());
-            stmt.setString(2, user.getUsername());
-            stmt.setString(3, user.getPasswordHash());
-            stmt.setString(4, user.getFullName());
-            stmt.setString(5, user.getRole().getRoleName());
+            stmt.setString(1, user.getUsername());
+            stmt.setString(2, user.getPasswordHash());
+            stmt.setString(3, user.getFullName());
+            stmt.setString(4, user.getRole().getRoleName());
 
             return stmt.executeUpdate() > 0;
         }

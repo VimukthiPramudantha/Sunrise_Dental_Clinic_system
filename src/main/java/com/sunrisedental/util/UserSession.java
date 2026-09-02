@@ -1,10 +1,11 @@
 package com.sunrisedental.util;
-
+import com.sunrisedental.model.Role;
 import com.sunrisedental.model.User;
 
 public class UserSession {
     private static volatile UserSession instance;
     private User currentUser;
+    private Role role;
 
     private UserSession() {}
 
@@ -34,4 +35,8 @@ public class UserSession {
     public void cleanSession() {
         this.currentUser = null;
     }
+    public Role getRole() {
+        return role;
+    }
+
 }

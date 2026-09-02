@@ -155,7 +155,6 @@
 
 <c:choose>
     <c:when test="${not empty sessionScope.user}">
-        <%-- Top Navigation Bar --%>
         <header class="navbar">
             <div class="brand">
                 <h1>Sunrise Dental Clinic</h1>
@@ -167,7 +166,6 @@
             </div>
         </header>
 
-        <%-- Main Dashboard Content --%>
         <main class="dashboard-container">
             <div class="welcome-hero">
                 <h2>Welcome Back, <c:out value="${sessionScope.user}"/>!</h2>
@@ -177,7 +175,6 @@
             <div class="section-title">System Modules</div>
 
             <div class="grid-menu">
-                <%-- Visible to ADMIN & RECEPTIONIST --%>
                 <c:if test="${sessionScope.userRole eq 'ADMIN' or sessionScope.userRole eq 'RECEPTIONIST'}">
                     <a href="${pageContext.request.contextPath}/appointments/new" class="card-menu">
                         <div>
@@ -188,7 +185,6 @@
                     </a>
                 </c:if>
 
-                <%-- Visible to ALL Roles (ADMIN, RECEPTIONIST, DENTIST) --%>
                 <a href="${pageContext.request.contextPath}/appointments/search" class="card-menu">
                     <div>
                         <h3>Search Appointments</h3>
@@ -197,7 +193,6 @@
                     <div class="card-footer">Open Module &rarr;</div>
                 </a>
 
-                <%-- Visible to ADMIN & RECEPTIONIST --%>
                 <c:if test="${sessionScope.userRole eq 'ADMIN' or sessionScope.userRole eq 'RECEPTIONIST'}">
                     <a href="${pageContext.request.contextPath}/billing" class="card-menu">
                         <div>
@@ -208,7 +203,6 @@
                     </a>
                 </c:if>
 
-                <%-- Visible to ADMIN ONLY --%>
                 <c:if test="${sessionScope.userRole eq 'ADMIN'}">
                     <a href="${pageContext.request.contextPath}/register" class="card-menu" style="border-top-color: #7209b7;">
                         <div>
@@ -219,7 +213,6 @@
                     </a>
                 </c:if>
 
-                <%-- Visible to ALL Roles --%>
                 <a href="${pageContext.request.contextPath}/help" class="card-menu" style="border-top-color: #2a9d8f;">
                     <div>
                         <h3 style="color: #2a9d8f;">Help & Manual</h3>
@@ -231,7 +224,6 @@
         </main>
     </c:when>
     <c:otherwise>
-        <%-- Redirect unauthorized direct access to login --%>
         <c:redirect url="/login"/>
     </c:otherwise>
 </c:choose>
