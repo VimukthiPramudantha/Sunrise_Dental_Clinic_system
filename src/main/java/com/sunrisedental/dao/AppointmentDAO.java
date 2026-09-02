@@ -80,23 +80,30 @@ public class AppointmentDAO {
 
     public List<Appointment> searchAppointments(String query) throws SQLException {
         List<Appointment> list = new ArrayList<>();
+
+        boolean hasQuery = query != null && !query.trim().isEmpty();
+
         String sql = "SELECT a.id, a.appointment_no, a.patient_id, p.full_name AS patient_name, p.phone_number, " +
                 "a.dentist_id, u.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot " +
                 "FROM appointments a " +
                 "JOIN patients p ON a.patient_id = p.patient_id " +
-                "JOIN users u ON a.dentist_id = u.user_id " +
-                "WHERE ? IS NULL OR ? = '' OR a.appointment_no LIKE ? OR p.full_name LIKE ? OR p.phone_number LIKE ? " +
-                "ORDER BY a.appointment_date DESC";
+                "JOIN users u ON a.dentist_id = u.user_id ";
+
+        if (hasQuery) {
+            sql += "WHERE a.appointment_no LIKE ? OR p.full_name LIKE ? OR p.phone_number LIKE ? ";
+        }
+
+        sql += "ORDER BY a.appointment_date DESC";
 
         try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            String searchTerm = "%" + query + "%";
-            stmt.setString(1, query);
-            stmt.setString(2, query);
-            stmt.setString(3, searchTerm);
-            stmt.setString(4, searchTerm);
-            stmt.setString(5, searchTerm);
+            if (hasQuery) {
+                String searchTerm = "%" + query.trim() + "%";
+                stmt.setString(1, searchTerm);
+                stmt.setString(2, searchTerm);
+                stmt.setString(3, searchTerm);
+            }
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
