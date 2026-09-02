@@ -69,11 +69,11 @@ public class DashboardServlet extends HttpServlet {
             req.setAttribute("stats", dashboardStats);
             req.setAttribute("currentUser", userObj);
 
-            req.getRequestDispatcher("/views/dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(req, resp);
 
         } catch (SQLException e) {
             req.setAttribute("errorMessage", "Database error loading dashboard data: " + e.getMessage());
-            req.getRequestDispatcher("/views/dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(req, resp);
         }
     }
 
