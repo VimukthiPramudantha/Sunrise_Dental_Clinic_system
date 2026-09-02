@@ -1,7 +1,10 @@
 package com.sunrisedental.dao;
 
+import com.sunrisedental.model.Appointment;
 import com.sunrisedental.util.DatabaseConnectionManager;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AppointmentDAO {
 
@@ -19,9 +22,8 @@ public class AppointmentDAO {
 
         try {
             conn = DatabaseConnectionManager.getInstance().getConnection();
-            conn.setAutoCommit(false); // Begin Transaction
+            conn.setAutoCommit(false);
 
-            // 1. Insert Patient
             patientStmt = conn.prepareStatement(insertPatientSql, Statement.RETURN_GENERATED_KEYS);
             patientStmt.setString(1, name);
             patientStmt.setString(2, address);
@@ -36,7 +38,6 @@ public class AppointmentDAO {
             generatedKeys.close();
             generatedKeys = null;
 
-            // 2. Insert Appointment (appointment_no will be set after we have the ID)
             apptStmt = conn.prepareStatement(insertApptSql, Statement.RETURN_GENERATED_KEYS);
             apptStmt.setInt(1, patientId);
             apptStmt.setInt(2, dentistId);
@@ -52,7 +53,6 @@ public class AppointmentDAO {
                 }
             }
 
-            // 3. Generate appointment_no from the new ID and write it back
             String apptNo = String.format("APP-%05d", apptId + 1000);
             try (PreparedStatement updateStmt = conn.prepareStatement(updateApptNoSql)) {
                 updateStmt.setString(1, apptNo);
@@ -60,17 +60,12 @@ public class AppointmentDAO {
                 updateStmt.executeUpdate();
             }
 
-            conn.commit(); // Commit Transaction
-
+            conn.commit();
             return apptNo;
 
         } catch (SQLException e) {
             if (conn != null) {
-                try {
-                    conn.rollback();
-                } catch (SQLException rollbackEx) {
-                    e.addSuppressed(rollbackEx);
-                }
+                try { conn.rollback(); } catch (SQLException rollbackEx) { e.addSuppressed(rollbackEx); }
             }
             throw e;
         } finally {
@@ -78,29 +73,134 @@ public class AppointmentDAO {
             if (patientStmt != null)   try { patientStmt.close();   } catch (SQLException ignored) {}
             if (apptStmt != null)      try { apptStmt.close();      } catch (SQLException ignored) {}
             if (conn != null) {
-                try {
-                    conn.setAutoCommit(true);
-                    conn.close();
-                } catch (SQLException ignored) {}
+                try { conn.setAutoCommit(true); conn.close(); } catch (SQLException ignored) {}
             }
         }
     }
 
+    public List<Appointment> searchAppointments(String query) throws SQLException {
+        List<Appointment> list = new ArrayList<>();
+        String sql = "SELECT a.id, a.appointment_no, a.patient_id, p.full_name AS patient_name, p.phone_number, " +
+                "a.dentist_id, d.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot " +
+                "FROM appointments a " +
+                "JOIN patients p ON a.patient_id = p.patient_id " +
+                "JOIN dentists d ON a.dentist_id = d.dentist_id " +
+                "WHERE ? IS NULL OR ? = '' OR a.appointment_no LIKE ? OR p.full_name LIKE ? OR p.phone_number LIKE ? " +
+                "ORDER BY a.appointment_date DESC";
 
-    // --- Temporary Stubs for DashboardServlet Support ---
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
+            String searchTerm = "%" + query + "%";
+            stmt.setString(1, query);
+            stmt.setString(2, query);
+            stmt.setString(3, searchTerm);
+            stmt.setString(4, searchTerm);
+            stmt.setString(5, searchTerm);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Appointment appt = new Appointment();
+                    appt.setId(rs.getInt("id"));
+                    appt.setAppointmentNo(rs.getString("appointment_no"));
+                    appt.setPatientId(rs.getInt("patient_id"));
+                    appt.setPatientName(rs.getString("patient_name"));
+                    appt.setPatientPhone(rs.getString("phone_number"));
+                    appt.setDentistId(rs.getInt("dentist_id"));
+                    appt.setDentistName(rs.getString("dentist_name"));
+                    appt.setTreatmentType(rs.getString("treatment_type"));
+                    appt.setAppointmentDate(rs.getDate("appointment_date"));
+                    appt.setTimeSlot(rs.getString("time_slot"));
+                    list.add(appt);
+                }
+            }
+        }
+        return list;
+    }
+
+    public Appointment getAppointmentById(int id) throws SQLException {
+        String sql = "SELECT a.id, a.appointment_no, a.patient_id, p.full_name AS patient_name, p.phone_number, " +
+                "a.dentist_id, d.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot " +
+                "FROM appointments a " +
+                "JOIN patients p ON a.patient_id = p.patient_id " +
+                "JOIN dentists d ON a.dentist_id = d.dentist_id WHERE a.id = ?";
+
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Appointment appt = new Appointment();
+                    appt.setId(rs.getInt("id"));
+                    appt.setAppointmentNo(rs.getString("appointment_no"));
+                    appt.setPatientId(rs.getInt("patient_id"));
+                    appt.setPatientName(rs.getString("patient_name"));
+                    appt.setPatientPhone(rs.getString("phone_number"));
+                    appt.setDentistId(rs.getInt("dentist_id"));
+                    appt.setDentistName(rs.getString("dentist_name"));
+                    appt.setTreatmentType(rs.getString("treatment_type"));
+                    appt.setAppointmentDate(rs.getDate("appointment_date"));
+                    appt.setTimeSlot(rs.getString("time_slot"));
+                    return appt;
+                }
+            }
+        }
+        return null;
+    }
+
+    // Update appointment details
+    public boolean updateAppointment(int apptId, int dentistId, String treatment, String date, String timeSlot) throws SQLException {
+        String sql = "UPDATE appointments SET dentist_id = ?, treatment_type = ?, appointment_date = ?, time_slot = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, dentistId);
+            stmt.setString(2, treatment);
+            stmt.setDate(3, Date.valueOf(date));
+            stmt.setString(4, timeSlot);
+            stmt.setInt(5, apptId);
+
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Delete appointment (Restricted to ADMIN at Servlet level)
+    public boolean deleteAppointment(int apptId) throws SQLException {
+        String sql = "DELETE FROM appointments WHERE id = ?";
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, apptId);
+            return stmt.executeUpdate() > 0;
+        }
+    }
+
+    // Dashboard Counters
     public int getTodayAppointmentCount() throws SQLException {
-        // Placeholder return until appointment queries are written
-        return 0;
+        String sql = "SELECT COUNT(*) FROM appointments WHERE appointment_date = CURDATE()";
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            return rs.next() ? rs.getInt(1) : 0;
+        }
     }
 
     public int getTodayAppointmentsByDentist(int dentistId) throws SQLException {
-        // Placeholder return until appointment queries are written
-        return 0;
+        String sql = "SELECT COUNT(*) FROM appointments WHERE dentist_id = ? AND appointment_date = CURDATE()";
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, dentistId);
+            try (ResultSet rs = stmt.executeQuery()) { return rs.next() ? rs.getInt(1) : 0; }
+        }
     }
 
     public int getTotalAppointmentsByDentist(int dentistId) throws SQLException {
-        // Placeholder return until appointment queries are written
-        return 0;
+        String sql = "SELECT COUNT(*) FROM appointments WHERE dentist_id = ?";
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, dentistId);
+            try (ResultSet rs = stmt.executeQuery()) { return rs.next() ? rs.getInt(1) : 0; }
+        }
     }
 }
