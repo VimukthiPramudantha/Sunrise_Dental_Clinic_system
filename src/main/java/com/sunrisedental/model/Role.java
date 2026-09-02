@@ -23,4 +23,16 @@ public enum Role {
         }
         throw new IllegalArgumentException("Invalid Role: " + roleStr);
     }
+
+    public boolean canManageAppointments() {
+        return this == ADMIN || this == RECEPTIONIST;
+    }
+
+    public boolean canManageBilling() {
+        return this == ADMIN || this == RECEPTIONIST;
+    }
+
+    public boolean canManageUsers() {
+        return this == ADMIN;
+    }
 }
