@@ -21,37 +21,53 @@ public class AuthService {
     }
 
     public boolean login(String username, String plainPassword) throws SQLException {
-        if (username == null || plainPassword == null || username.trim().isEmpty()) {
+        if (username == null || plainPassword == null || username.trim().isEmpty() || plainPassword.isEmpty()) {
             throw new IllegalArgumentException("Username and password cannot be empty.");
         }
 
-        User user = userDAO.findByUsername(username.trim());
+        String cleanUsername = username.trim();
+        User user = userDAO.findByUsername(cleanUsername);
 
         if (user != null && PasswordUtil.verifyPassword(plainPassword, user.getPasswordHash())) {
+
             UserSession.getInstance().createSession(user);
             return true;
         }
+
         return false;
     }
 
     public boolean registerUser(String username, String plainPassword, String fullName, String roleStr) throws SQLException {
-        if (username == null || username.trim().isEmpty() ||
-                plainPassword == null || plainPassword.trim().length() < 6 ||
-                fullName == null || fullName.trim().isEmpty()) {
-            throw new IllegalArgumentException("Invalid input: Password must be at least 6 characters and all fields are required.");
+
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username is required.");
         }
 
-        // Check if username already exists
-        if (userDAO.findByUsername(username.trim()) != null) {
-            throw new IllegalArgumentException("Username '" + username + "' is already taken.");
+        if (plainPassword == null || plainPassword.trim().length() < 6) {
+            throw new IllegalArgumentException("Password must be at least 6 characters long.");
         }
 
-        // Generate auto ID and hash password
-        String userId = "USR-" + System.currentTimeMillis() % 10000;
+        if (fullName == null || fullName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Full name is required.");
+        }
+
+        if (roleStr == null || roleStr.trim().isEmpty()) {
+            throw new IllegalArgumentException("System role assignment is required.");
+        }
+
+        String cleanUsername = username.trim();
+
+        if (userDAO.findByUsername(cleanUsername) != null) {
+            throw new IllegalArgumentException("Username '" + cleanUsername + "' is already taken.");
+        }
+
+        String userId = "USR-" + (System.currentTimeMillis() % 10000);
+
         String hashedPassword = PasswordUtil.hashPassword(plainPassword);
+
         Role role = Role.fromString(roleStr);
 
-        User newUser = new User(userId, username.trim(), hashedPassword, fullName.trim(), role);
+        User newUser = new User(userId, cleanUsername, hashedPassword, fullName.trim(), role);
         return userDAO.createUser(newUser);
     }
 
