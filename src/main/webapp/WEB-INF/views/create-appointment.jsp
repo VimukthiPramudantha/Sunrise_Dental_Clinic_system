@@ -52,9 +52,14 @@
             <label for="dentistId">Assign Dentist</label>
             <select id="dentistId" name="dentistId" required>
                 <option value="">-- Select Dentist --</option>
-                <!-- Populated dynamically from User Servlet/DAO -->
-                <option value="1">Dr. Smith (General Dentistry)</option>
-                <option value="2">Dr. Sarah (Orthodontics)</option>
+                <c:forEach var="dentist" items="${dentists}">
+                    <option value="${dentist.id}">
+                        ${dentist.fullName} (${dentist.specialization}) — Rs. ${dentist.consultationFee}
+                    </option>
+                </c:forEach>
+                <c:if test="${empty dentists}">
+                    <option disabled>No dentists available</option>
+                </c:if>
             </select>
         </div>
 
@@ -70,7 +75,6 @@
 
         <div class="form-group">
             <label for="appointmentDate">Date</label>
-            <!-- Disable past dates dynamically using JavaScript min attribute -->
             <input type="date" id="appointmentDate" name="appointmentDate" required>
         </div>
 
@@ -91,7 +95,6 @@
 </div>
 
 <script>
-    // Enforce minimum date as today in date picker
     const dateInput = document.getElementById('appointmentDate');
     const today = new Date().toISOString().split('T')[0];
     dateInput.setAttribute('min', today);
