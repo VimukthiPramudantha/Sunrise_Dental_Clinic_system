@@ -66,23 +66,20 @@ public class DashboardServlet extends HttpServlet {
                     break;
             }
 
-            // Attach metrics and user info to request scope
             req.setAttribute("stats", dashboardStats);
             req.setAttribute("currentUser", userObj);
 
-            // Forward request to view
-            req.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard.jsp").forward(req, resp);
 
         } catch (SQLException e) {
             req.setAttribute("errorMessage", "Database error loading dashboard data: " + e.getMessage());
-            req.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/views/dashboard.jsp").forward(req, resp);
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        // Redirect any POST requests sent to /dashboard back to doGet
         doGet(req, resp);
     }
 }
