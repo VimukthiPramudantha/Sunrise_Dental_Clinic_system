@@ -84,10 +84,10 @@ public class AppointmentDAO {
         boolean hasQuery = query != null && !query.trim().isEmpty();
 
         String sql = "SELECT a.id, a.appointment_no, a.patient_id, p.full_name AS patient_name, p.phone_number, " +
-                "a.dentist_id, u.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot " +
+                "a.dentist_id, d.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot " +
                 "FROM appointments a " +
                 "JOIN patients p ON a.patient_id = p.patient_id " +
-                "JOIN users u ON a.dentist_id = u.user_id ";
+                "JOIN dentists d ON a.dentist_id = d.id ";
 
         if (hasQuery) {
             sql += "WHERE a.appointment_no LIKE ? OR p.full_name LIKE ? OR p.phone_number LIKE ? ";
@@ -127,10 +127,10 @@ public class AppointmentDAO {
 
     public Appointment getAppointmentById(int id) throws SQLException {
         String sql = "SELECT a.id, a.appointment_no, a.patient_id, p.full_name AS patient_name, p.phone_number, " +
-                "a.dentist_id, u.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot " +
+                "a.dentist_id, d.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot " +
                 "FROM appointments a " +
                 "JOIN patients p ON a.patient_id = p.patient_id " +
-                "JOIN users u ON a.dentist_id = u.user_id WHERE a.id = ?";
+                "JOIN dentists d ON a.dentist_id = d.id WHERE a.id = ?";
 
         try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {

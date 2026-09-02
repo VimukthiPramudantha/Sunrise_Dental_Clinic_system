@@ -14,7 +14,7 @@ public class DentistDAO {
 
     public List<Dentist> getAllDentists() throws SQLException {
         List<Dentist> dentists = new ArrayList<>();
-        String sql = "SELECT user_id, full_name FROM users WHERE role = 'DENTIST' ORDER BY full_name ASC";
+        String sql = "SELECT id, full_name, specialization, consultation_fee FROM dentists ORDER BY full_name ASC";
 
         try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
@@ -22,10 +22,10 @@ public class DentistDAO {
 
             while (rs.next()) {
                 Dentist dentist = new Dentist(
-                        rs.getInt("user_id"),
+                        rs.getInt("id"),
                         rs.getString("full_name"),
-                        "",
-                        null
+                        rs.getString("specialization"),
+                        rs.getBigDecimal("consultation_fee")
                 );
                 dentists.add(dentist);
             }

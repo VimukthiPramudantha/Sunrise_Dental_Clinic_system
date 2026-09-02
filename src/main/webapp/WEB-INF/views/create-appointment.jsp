@@ -54,7 +54,7 @@
                 <option value="">-- Select Dentist --</option>
                 <c:forEach var="dentist" items="${dentists}">
                     <option value="${dentist.id}">
-                        ${dentist.fullName}
+                        ${dentist.fullName} (${dentist.specialization}) — Rs. ${dentist.consultationFee}
                     </option>
                 </c:forEach>
                 <c:if test="${empty dentists}">
