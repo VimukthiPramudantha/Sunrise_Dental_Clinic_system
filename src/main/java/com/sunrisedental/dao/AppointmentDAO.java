@@ -12,11 +12,10 @@ public class AppointmentDAO {
         PreparedStatement patientStmt = null;
         PreparedStatement apptStmt = null;
         ResultSet generatedKeys = null;
-        String generatedApptNo = null;
 
         String insertPatientSql = "INSERT INTO patients (full_name, address, phone_number) VALUES (?, ?, ?)";
-        String insertApptSql = "INSERT INTO appointments (patient_id, dentist_id, treatment_type, appointment_date, time_slot) VALUES (?, ?, ?, ?, ?)";
-        String fetchApptNoSql = "SELECT appointment_no FROM appointments WHERE id = ?";
+        String insertApptSql    = "INSERT INTO appointments (patient_id, dentist_id, treatment_type, appointment_date, time_slot) VALUES (?, ?, ?, ?, ?)";
+        String updateApptNoSql  = "UPDATE appointments SET appointment_no = ? WHERE id = ?";
 
         try {
             conn = DatabaseConnectionManager.getInstance().getConnection();
@@ -34,8 +33,10 @@ public class AppointmentDAO {
             if (generatedKeys.next()) {
                 patientId = generatedKeys.getInt(1);
             }
+            generatedKeys.close();
+            generatedKeys = null;
 
-            // 2. Insert Appointment
+            // 2. Insert Appointment (appointment_no will be set after we have the ID)
             apptStmt = conn.prepareStatement(insertApptSql, Statement.RETURN_GENERATED_KEYS);
             apptStmt.setInt(1, patientId);
             apptStmt.setInt(2, dentistId);
@@ -51,19 +52,17 @@ public class AppointmentDAO {
                 }
             }
 
-            conn.commit(); // Commit Transaction
-
-            // 3. Fetch auto-generated string (APP-100X)
-            try (PreparedStatement fetchStmt = conn.prepareStatement(fetchApptNoSql)) {
-                fetchStmt.setInt(1, apptId);
-                try (ResultSet rs = fetchStmt.executeQuery()) {
-                    if (rs.next()) {
-                        generatedApptNo = rs.getString("appointment_no");
-                    }
-                }
+            // 3. Generate appointment_no from the new ID and write it back
+            String apptNo = String.format("APP-%05d", apptId + 1000);
+            try (PreparedStatement updateStmt = conn.prepareStatement(updateApptNoSql)) {
+                updateStmt.setString(1, apptNo);
+                updateStmt.setInt(2, apptId);
+                updateStmt.executeUpdate();
             }
 
-            return generatedApptNo;
+            conn.commit(); // Commit Transaction
+
+            return apptNo;
 
         } catch (SQLException e) {
             if (conn != null) {
@@ -76,8 +75,8 @@ public class AppointmentDAO {
             throw e;
         } finally {
             if (generatedKeys != null) try { generatedKeys.close(); } catch (SQLException ignored) {}
-            if (patientStmt != null) try { patientStmt.close(); } catch (SQLException ignored) {}
-            if (apptStmt != null) try { apptStmt.close(); } catch (SQLException ignored) {}
+            if (patientStmt != null)   try { patientStmt.close();   } catch (SQLException ignored) {}
+            if (apptStmt != null)      try { apptStmt.close();      } catch (SQLException ignored) {}
             if (conn != null) {
                 try {
                     conn.setAutoCommit(true);
@@ -86,6 +85,7 @@ public class AppointmentDAO {
             }
         }
     }
+
 
     // --- Temporary Stubs for DashboardServlet Support ---
 
