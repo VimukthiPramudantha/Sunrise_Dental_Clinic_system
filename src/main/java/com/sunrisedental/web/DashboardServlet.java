@@ -27,26 +27,23 @@ public class DashboardServlet extends HttpServlet {
 
         HttpSession session = req.getSession(false);
 
-        // Safety check: Redirect to login if user session does not exist
-        if (session == null || session.getAttribute("userSession") == null) {
+        if (session == null || session.getAttribute("userObj") == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        UserSession userSession = (UserSession) session.getAttribute("userSession");
+        com.sunrisedental.model.User userObj = (com.sunrisedental.model.User) session.getAttribute("userObj");
 
-        // Validate that currentUser exists inside UserSession
-        if (userSession.getCurrentUser() == null || userSession.getRole() == null) {
+        if (userObj == null || userObj.getRole() == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        String role = userSession.getRole().name();
+        String role = userObj.getRole().name();
 
         try {
             Map<String, Object> dashboardStats = new HashMap<>();
 
-            // Fetch metrics tailored to role-based access
             switch (role) {
                 case "ADMIN":
                     dashboardStats.put("totalPatients", patientDAO.getTotalPatientCount());
@@ -55,7 +52,7 @@ public class DashboardServlet extends HttpServlet {
                     break;
 
                 case "DENTIST":
-                    int dentistId = userSession.getCurrentUser().getUserId();
+                    int dentistId = userObj.getUserId();
                     dashboardStats.put("myTodayAppointments", appointmentDAO.getTodayAppointmentsByDentist(dentistId));
                     dashboardStats.put("myTotalAppointments", appointmentDAO.getTotalAppointmentsByDentist(dentistId));
                     break;
@@ -71,14 +68,14 @@ public class DashboardServlet extends HttpServlet {
 
             // Attach metrics and user info to request scope
             req.setAttribute("stats", dashboardStats);
-            req.setAttribute("currentUser", userSession.getCurrentUser());
+            req.setAttribute("currentUser", userObj);
 
             // Forward request to view
-            req.getRequestDispatcher("/views/dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(req, resp);
 
         } catch (SQLException e) {
             req.setAttribute("errorMessage", "Database error loading dashboard data: " + e.getMessage());
-            req.getRequestDispatcher("/views/dashboard.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/views/dashboard.jsp").forward(req, resp);
         }
     }
 
