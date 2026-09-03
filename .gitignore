@@ -37,3 +37,6 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+# Email
+src/main/java/com/sunrisedental/util/EmailUtil.java

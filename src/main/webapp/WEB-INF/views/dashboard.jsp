@@ -204,7 +204,7 @@
                 </c:if>
 
                 <c:if test="${sessionScope.userRole eq 'ADMIN'}">
-                    <a href="${pageContext.request.contextPath}/register" class="card-menu" style="border-top-color: #7209b7;">
+                    <a href="${pageContext.request.contextPath}/admin-register" class="card-menu" style="border-top-color: #7209b7;">
                         <div>
                             <h3 style="color: #7209b7;">Staff Registration</h3>
                             <p>Create new clinic staff accounts and assign system roles and permissions.</p>
