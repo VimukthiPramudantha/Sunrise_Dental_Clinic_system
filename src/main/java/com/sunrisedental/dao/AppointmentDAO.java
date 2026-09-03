@@ -131,9 +131,11 @@ public class AppointmentDAO {
     public List<Appointment> getAppointmentsByDentist(int dentistId) throws SQLException {
         List<Appointment> appointments = new ArrayList<>();
         String sql = "SELECT a.id, a.appointment_no, p.full_name AS patient_name, p.phone_number, " +
+                "COALESCE(u.full_name, 'Unassigned') AS dentist_name, " +
                 "a.treatment_type, a.appointment_date, a.time_slot, a.status " +
                 "FROM appointments a " +
                 "JOIN patients p ON a.patient_id = p.patient_id " +
+                "LEFT JOIN users u ON a.dentist_id = u.user_id " +
                 "WHERE a.dentist_id = ? " +
                 "ORDER BY a.appointment_date DESC, a.time_slot ASC";
 
@@ -149,6 +151,7 @@ public class AppointmentDAO {
                     appt.setAppointmentNo(rs.getString("appointment_no"));
                     appt.setPatientName(rs.getString("patient_name"));
                     appt.setPatientPhone(rs.getString("phone_number"));
+                    appt.setDentistName(rs.getString("dentist_name"));
                     appt.setTreatmentType(rs.getString("treatment_type"));
                     appt.setAppointmentDate(rs.getDate("appointment_date"));
                     appt.setTimeSlot(rs.getString("time_slot"));
@@ -172,7 +175,8 @@ public class AppointmentDAO {
                 "WHERE (? IS NULL OR ? = '' " +
                 "   OR a.appointment_no LIKE CONCAT('%', ?, '%') " +
                 "   OR p.full_name LIKE CONCAT('%', ?, '%') " +
-                "   OR p.phone_number LIKE CONCAT('%', ?, '%')) " +
+                "   OR p.phone_number LIKE CONCAT('%', ?, '%') " +
+                "   OR u.full_name LIKE CONCAT('%', ?, '%')) " +
                 "ORDER BY a.appointment_date DESC";
 
         try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
@@ -183,6 +187,7 @@ public class AppointmentDAO {
             stmt.setString(3, query);
             stmt.setString(4, query);
             stmt.setString(5, query);
+            stmt.setString(6, query);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -191,7 +196,50 @@ public class AppointmentDAO {
                     appt.setAppointmentNo(rs.getString("appointment_no"));
                     appt.setPatientName(rs.getString("patient_name"));
                     appt.setPatientPhone(rs.getString("phone_number"));
-                    appt.setDentistName(rs.getString("dentist_name")); // Properly set dentist_name
+                    appt.setDentistName(rs.getString("dentist_name"));
+                    appt.setTreatmentType(rs.getString("treatment_type"));
+                    appt.setAppointmentDate(rs.getDate("appointment_date"));
+                    appt.setTimeSlot(rs.getString("time_slot"));
+                    appt.setStatus(rs.getString("status"));
+                    list.add(appt);
+                }
+            }
+        }
+        return list;
+    }
+
+    public List<Appointment> searchAppointmentsByDentist(String query, int dentistId) throws SQLException {
+        List<Appointment> list = new ArrayList<>();
+        String sql = "SELECT a.id, a.appointment_no, p.full_name AS patient_name, p.phone_number, " +
+                "COALESCE(u.full_name, 'Unassigned') AS dentist_name, " +
+                "a.treatment_type, a.appointment_date, a.time_slot, a.status " +
+                "FROM appointments a " +
+                "JOIN patients p ON a.patient_id = p.patient_id " +
+                "LEFT JOIN users u ON a.dentist_id = u.user_id " +
+                "WHERE a.dentist_id = ? AND (? IS NULL OR ? = '' " +
+                "   OR a.appointment_no LIKE CONCAT('%', ?, '%') " +
+                "   OR p.full_name LIKE CONCAT('%', ?, '%') " +
+                "   OR p.phone_number LIKE CONCAT('%', ?, '%')) " +
+                "ORDER BY a.appointment_date DESC";
+
+        try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, dentistId);
+            stmt.setString(2, query);
+            stmt.setString(3, query);
+            stmt.setString(4, query);
+            stmt.setString(5, query);
+            stmt.setString(6, query);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Appointment appt = new Appointment();
+                    appt.setId(rs.getInt("id"));
+                    appt.setAppointmentNo(rs.getString("appointment_no"));
+                    appt.setPatientName(rs.getString("patient_name"));
+                    appt.setPatientPhone(rs.getString("phone_number"));
+                    appt.setDentistName(rs.getString("dentist_name"));
                     appt.setTreatmentType(rs.getString("treatment_type"));
                     appt.setAppointmentDate(rs.getDate("appointment_date"));
                     appt.setTimeSlot(rs.getString("time_slot"));

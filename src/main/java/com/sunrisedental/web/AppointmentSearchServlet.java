@@ -68,7 +68,7 @@ public class AppointmentSearchServlet extends HttpServlet {
 
                 // IF DENTIST: restrict search to only their own appointments using currentUserId
                 if ("DENTIST".equalsIgnoreCase(userRole)) {
-                    appointments = appointmentDAO.getAppointmentsByDentist(currentUserId);
+                    appointments = appointmentDAO.searchAppointmentsByDentist(query, currentUserId);
                 } else {
                     appointments = appointmentDAO.searchAppointments(query);
                 }

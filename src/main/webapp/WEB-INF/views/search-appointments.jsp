@@ -29,7 +29,7 @@
     </c:if>
 
     <form action="${pageContext.request.contextPath}/appointments/search" method="GET" class="search-box">
-        <input type="text" name="query" value="<c:out value='${query}'/>" placeholder="Search by Appt No, Patient Name, or Phone...">
+        <input type="text" name="query" value="<c:out value='${query}'/>" placeholder="Search by Appt No, Patient Name, Phone, or Dentist...">
         <button type="submit" class="btn-submit" style="width: auto;">Search</button>
     </form>
 
