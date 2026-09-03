@@ -1,0 +1,91 @@
+name: Java EE CI/CD Pipeline - Sunrise Dental System
+
+on:
+  push:
+    branches: [ "main", "master", "develop" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    name: Build & Run Automated Backend Tests
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_DATABASE: sunrise_dental
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Initialize MySQL Database
+        run: |
+          mysql -h 127.0.0.1 -u root -prootpassword sunrise_dental << 'EOF'
+          CREATE TABLE IF NOT EXISTS patients (
+              patient_id INT AUTO_INCREMENT PRIMARY KEY,
+              full_name VARCHAR(100) NOT NULL,
+              address TEXT NOT NULL,
+              phone_number VARCHAR(15) NOT NULL,
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+
+          CREATE TABLE IF NOT EXISTS dentists (
+              dentist_id INT AUTO_INCREMENT PRIMARY KEY,
+              full_name VARCHAR(100) NOT NULL,
+              specialization VARCHAR(50) NOT NULL,
+              consultation_fee DECIMAL(10,2) NOT NULL
+          );
+
+          CREATE TABLE IF NOT EXISTS appointments (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              appointment_no VARCHAR(20) UNIQUE,
+              patient_id INT NOT NULL,
+              dentist_id INT NOT NULL,
+              treatment_type VARCHAR(50) NOT NULL,
+              appointment_date DATE NOT NULL,
+              time_slot VARCHAR(20) NOT NULL,
+              status VARCHAR(20) DEFAULT 'SCHEDULED',
+              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+              FOREIGN KEY (dentist_id) REFERENCES dentists(dentist_id) ON DELETE CASCADE
+          );
+
+          INSERT INTO dentists (dentist_id, full_name, specialization, consultation_fee)
+          VALUES (1, 'Dr. Perera', 'Orthodontics', 3500.00)
+          ON DUPLICATE KEY UPDATE full_name=VALUES(full_name);
+          EOF
+
+      - name: Run Automated Tests
+        run: mvn clean test
+        env:
+          DB_URL: "jdbc:mysql://localhost:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+          DB_USER: "root"
+          DB_PASSWORD: "root1234"
+
+      - name: Build WAR Package
+        run: mvn package -DskipTests
+
+      - name: Upload Deployment Artifact (.war)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sunrise-dental-system-war
+          path: target/*.war
+          retention-days: 7
