@@ -92,11 +92,11 @@ public class AppointmentDAO {
         }
     }
 
-    // --- SEARCH & READ OPERATIONS ---
 
     public Appointment getAppointmentById(int id) throws SQLException {
         String sql = "SELECT a.id, a.appointment_no, a.patient_id, p.full_name AS patient_name, p.phone_number, " +
-                "a.dentist_id, u.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot, a.status " +
+                "a.dentist_id, COALESCE(u.full_name, 'Unassigned') AS dentist_name, " +
+                "a.treatment_type, a.appointment_date, a.time_slot, a.status " +
                 "FROM appointments a " +
                 "JOIN patients p ON a.patient_id = p.patient_id " +
                 "LEFT JOIN users u ON a.dentist_id = u.user_id " +
@@ -116,7 +116,7 @@ public class AppointmentDAO {
                     appt.setPatientName(rs.getString("patient_name"));
                     appt.setPatientPhone(rs.getString("phone_number"));
                     appt.setDentistId(rs.getInt("dentist_id"));
-                    appt.setDentistName(rs.getString("dentist_name"));
+                    appt.setDentistName(rs.getString("dentist_name")); // Properly set dentist_name
                     appt.setTreatmentType(rs.getString("treatment_type"));
                     appt.setAppointmentDate(rs.getDate("appointment_date"));
                     appt.setTimeSlot(rs.getString("time_slot"));
@@ -164,7 +164,8 @@ public class AppointmentDAO {
     public List<Appointment> searchAppointments(String query) throws SQLException {
         List<Appointment> list = new ArrayList<>();
         String sql = "SELECT a.id, a.appointment_no, p.full_name AS patient_name, p.phone_number, " +
-                "u.full_name AS dentist_name, a.treatment_type, a.appointment_date, a.time_slot, a.status " +
+                "COALESCE(u.full_name, 'Unassigned') AS dentist_name, " +
+                "a.treatment_type, a.appointment_date, a.time_slot, a.status " +
                 "FROM appointments a " +
                 "JOIN patients p ON a.patient_id = p.patient_id " +
                 "LEFT JOIN users u ON a.dentist_id = u.user_id " +
@@ -190,7 +191,7 @@ public class AppointmentDAO {
                     appt.setAppointmentNo(rs.getString("appointment_no"));
                     appt.setPatientName(rs.getString("patient_name"));
                     appt.setPatientPhone(rs.getString("phone_number"));
-                    appt.setDentistName(rs.getString("dentist_name"));
+                    appt.setDentistName(rs.getString("dentist_name")); // Properly set dentist_name
                     appt.setTreatmentType(rs.getString("treatment_type"));
                     appt.setAppointmentDate(rs.getDate("appointment_date"));
                     appt.setTimeSlot(rs.getString("time_slot"));
@@ -201,8 +202,6 @@ public class AppointmentDAO {
         }
         return list;
     }
-
-    // --- UPDATE & DELETE OPERATIONS ---
 
     public boolean updateAppointment(int id, int dentistId, String treatment, String date, String timeSlot) throws SQLException {
         String sql = "UPDATE appointments SET dentist_id = ?, treatment_type = ?, appointment_date = ?, time_slot = ? WHERE id = ?";

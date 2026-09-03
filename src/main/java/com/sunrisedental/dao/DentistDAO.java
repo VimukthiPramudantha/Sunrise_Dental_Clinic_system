@@ -1,6 +1,7 @@
 package com.sunrisedental.dao;
 
-import com.sunrisedental.model.Dentist;
+import com.sunrisedental.model.Role;
+import com.sunrisedental.model.User;
 import com.sunrisedental.util.DatabaseConnectionManager;
 
 import java.sql.Connection;
@@ -12,20 +13,21 @@ import java.util.List;
 
 public class DentistDAO {
 
-    public List<Dentist> getAllDentists() throws SQLException {
-        List<Dentist> dentists = new ArrayList<>();
-        String sql = "SELECT id, full_name, specialization, consultation_fee FROM dentists ORDER BY full_name ASC";
+    public List<User> getAllDentists() throws SQLException {
+        List<User> dentists = new ArrayList<>();
+        String sql = "SELECT user_id, username, full_name, role FROM users WHERE role = 'DENTIST'";
 
         try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                Dentist dentist = new Dentist(
-                        rs.getInt("id"),
+                User dentist = new User(
+                        rs.getInt("user_id"),
+                        rs.getString("username"),
+                        "",
                         rs.getString("full_name"),
-                        rs.getString("specialization"),
-                        rs.getBigDecimal("consultation_fee")
+                        Role.fromString(rs.getString("role"))
                 );
                 dentists.add(dentist);
             }
