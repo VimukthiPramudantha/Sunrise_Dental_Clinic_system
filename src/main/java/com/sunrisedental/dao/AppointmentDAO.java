@@ -116,7 +116,7 @@ public class AppointmentDAO {
                     appt.setPatientName(rs.getString("patient_name"));
                     appt.setPatientPhone(rs.getString("phone_number"));
                     appt.setDentistId(rs.getInt("dentist_id"));
-                    appt.setDentistName(rs.getString("dentist_name")); // Properly set dentist_name
+                    appt.setDentistName(rs.getString("dentist_name"));
                     appt.setTreatmentType(rs.getString("treatment_type"));
                     appt.setAppointmentDate(rs.getDate("appointment_date"));
                     appt.setTimeSlot(rs.getString("time_slot"));
