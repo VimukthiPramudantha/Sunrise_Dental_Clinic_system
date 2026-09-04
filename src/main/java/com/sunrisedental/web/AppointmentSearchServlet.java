@@ -26,11 +26,24 @@ public class AppointmentSearchServlet extends HttpServlet {
         this.dentistDAO = new DentistDAO();
     }
 
+    // Inside AppointmentSearchServlet.java
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String path = request.getServletPath();
+        HttpSession session = request.getSession(false);
+
+        if (session == null || session.getAttribute("userObj") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+
+        // Get current logged-in user object
+        com.sunrisedental.model.User currentUser = (com.sunrisedental.model.User) session.getAttribute("userObj");
+        int currentUserId = currentUser.getUserId(); // Direct integer ID
+        String userRole = currentUser.getRole().name();
 
         try {
             if ("/appointments/edit".equals(path)) {
@@ -39,22 +52,27 @@ public class AppointmentSearchServlet extends HttpServlet {
                 request.setAttribute("appointment", appt);
                 request.setAttribute("dentists", dentistDAO.getAllDentists());
                 request.getRequestDispatcher("/WEB-INF/views/edit-appointment.jsp").forward(request, response);
-            } else if ("/appointments/delete".equals(path)) {
-                HttpSession session = request.getSession(false);
-                String userRole = (session != null) ? (String) session.getAttribute("userRole") : "";
 
-                // Strict Admin Permission Enforcement
+            } else if ("/appointments/delete".equals(path)) {
                 if (!"ADMIN".equalsIgnoreCase(userRole)) {
                     response.sendRedirect(request.getContextPath() + "/access-denied");
                     return;
                 }
-
                 int id = Integer.parseInt(request.getParameter("id"));
                 appointmentDAO.deleteAppointment(id);
                 response.sendRedirect(request.getContextPath() + "/appointments/search?success=Appointment+deleted+successfully");
+
             } else {
                 String query = request.getParameter("query");
-                List<Appointment> appointments = appointmentDAO.searchAppointments(query);
+                List<Appointment> appointments;
+
+                // IF DENTIST: restrict search to only their own appointments using currentUserId
+                if ("DENTIST".equalsIgnoreCase(userRole)) {
+                    appointments = appointmentDAO.searchAppointmentsByDentist(query, currentUserId);
+                } else {
+                    appointments = appointmentDAO.searchAppointments(query);
+                }
+
                 request.setAttribute("appointments", appointments);
                 request.setAttribute("query", query);
                 request.getRequestDispatcher("/WEB-INF/views/search-appointments.jsp").forward(request, response);

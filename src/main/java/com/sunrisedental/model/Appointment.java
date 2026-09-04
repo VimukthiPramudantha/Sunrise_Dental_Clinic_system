@@ -13,6 +13,7 @@ public class Appointment {
     private String treatmentType;
     private Date appointmentDate;
     private String timeSlot;
+    private String status; // ADDED: Field declaration
 
     public Appointment() {}
 
@@ -45,4 +46,7 @@ public class Appointment {
 
     public String getTimeSlot() { return timeSlot; }
     public void setTimeSlot(String timeSlot) { this.timeSlot = timeSlot; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

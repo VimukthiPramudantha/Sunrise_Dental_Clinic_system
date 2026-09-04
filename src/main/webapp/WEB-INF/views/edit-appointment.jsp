@@ -262,15 +262,9 @@
                         <select id="dentistId" name="dentistId" required>
                             <option value="">-- Select Dentist --</option>
                             <c:forEach var="dentist" items="${dentists}">
-                                <option value="${dentist.id}"
-                                    <c:if test="${dentist.id == appointment.dentistId}">selected</c:if>>
+                                <option value="${dentist.userId}"
+                                    <c:if test="${dentist.userId == appointment.dentistId}">selected</c:if>>
                                     <c:out value="${dentist.fullName}"/>
-                                    <c:if test="${not empty dentist.specialization}">
-                                        (<c:out value="${dentist.specialization}"/>)
-                                    </c:if>
-                                    <c:if test="${dentist.consultationFee != null}">
-                                        — Rs. <c:out value="${dentist.consultationFee}"/>
-                                    </c:if>
                                 </option>
                             </c:forEach>
                             <c:if test="${empty dentists}">
