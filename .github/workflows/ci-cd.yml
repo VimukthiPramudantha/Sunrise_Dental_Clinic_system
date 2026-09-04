@@ -1,4 +1,4 @@
-name: Java EE CI/CD Pipeline - Sunrise Dental System
+name: Sunrise Dental — CI/CD Pipeline
 
 on:
   push:
@@ -8,80 +8,123 @@ on:
 
 jobs:
   build-and-test:
-    name: Build & Run Automated Backend Tests
+    name: Build & Test
     runs-on: ubuntu-latest
 
     services:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_ROOT_PASSWORD: rootpassword
+          MYSQL_ROOT_PASSWORD: root1234
           MYSQL_DATABASE: sunrise_dental
         ports:
           - 3306:3306
         options: >-
-          --health-cmd="mysqladmin ping"
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot1234"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set Up JDK 17 (Temurin)
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
 
-      - name: Initialize MySQL Database
+      - name: Wait for MySQL to be ready
         run: |
-          mysql -h 127.0.0.1 -u root -prootpassword sunrise_dental << 'EOF'
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -uroot -proot1234 --silent; then
+              echo "MySQL is ready."
+              break
+            fi
+            echo "Waiting for MySQL... ($i/30)"
+            sleep 2
+          done
+
+      - name: Initialize Database Schema
+        run: |
+          mysql -h 127.0.0.1 -uroot -proot1234 sunrise_dental << 'EOF'
+
+          -- Users table (Admins, Receptionists, Dentists)
+          CREATE TABLE IF NOT EXISTS users (
+              user_id       INT AUTO_INCREMENT PRIMARY KEY,
+              username      VARCHAR(50)  NOT NULL UNIQUE,
+              password_hash VARCHAR(255) NOT NULL,
+              full_name     VARCHAR(100) NOT NULL,
+              role          ENUM('ADMIN', 'RECEPTIONIST', 'DENTIST') NOT NULL,
+              created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+
+          -- Patients table
           CREATE TABLE IF NOT EXISTS patients (
-              patient_id INT AUTO_INCREMENT PRIMARY KEY,
-              full_name VARCHAR(100) NOT NULL,
-              address TEXT NOT NULL,
-              phone_number VARCHAR(15) NOT NULL,
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              patient_id   INT AUTO_INCREMENT PRIMARY KEY,
+              full_name    VARCHAR(100) NOT NULL,
+              address      TEXT         NOT NULL,
+              phone_number VARCHAR(20)  NOT NULL,
+              created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );
 
-          CREATE TABLE IF NOT EXISTS dentists (
-              dentist_id INT AUTO_INCREMENT PRIMARY KEY,
-              full_name VARCHAR(100) NOT NULL,
-              specialization VARCHAR(50) NOT NULL,
-              consultation_fee DECIMAL(10,2) NOT NULL
-          );
-
+          -- Appointments table
           CREATE TABLE IF NOT EXISTS appointments (
-              id INT AUTO_INCREMENT PRIMARY KEY,
-              appointment_no VARCHAR(20) UNIQUE,
-              patient_id INT NOT NULL,
-              dentist_id INT NOT NULL,
-              treatment_type VARCHAR(50) NOT NULL,
-              appointment_date DATE NOT NULL,
-              time_slot VARCHAR(20) NOT NULL,
-              status VARCHAR(20) DEFAULT 'SCHEDULED',
-              created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
-              FOREIGN KEY (dentist_id) REFERENCES dentists(dentist_id) ON DELETE CASCADE
+              id               INT AUTO_INCREMENT PRIMARY KEY,
+              appointment_no   VARCHAR(20)  NULL UNIQUE,
+              patient_id       INT          NOT NULL,
+              dentist_id       INT          NOT NULL,
+              treatment_type   VARCHAR(100) NOT NULL,
+              appointment_date DATE         NOT NULL,
+              time_slot        VARCHAR(50)  NOT NULL,
+              status           ENUM('PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED') DEFAULT 'PENDING',
+              created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              CONSTRAINT fk_appt_patient FOREIGN KEY (patient_id) REFERENCES patients(patient_id) ON DELETE CASCADE,
+              CONSTRAINT fk_appt_dentist FOREIGN KEY (dentist_id) REFERENCES users(user_id)       ON DELETE RESTRICT
           );
 
-          INSERT INTO dentists (dentist_id, full_name, specialization, consultation_fee)
-          VALUES (1, 'Dr. Perera', 'Orthodontics', 3500.00)
-          ON DUPLICATE KEY UPDATE full_name=VALUES(full_name);
+          -- Bills / Invoices table
+          CREATE TABLE IF NOT EXISTS bills (
+              id                INT AUTO_INCREMENT PRIMARY KEY,
+              invoice_no        VARCHAR(20)    NOT NULL UNIQUE,
+              appointment_id    INT            NOT NULL,
+              consultation_fee  DECIMAL(10, 2) NOT NULL,
+              treatment_cost    DECIMAL(10, 2) NOT NULL,
+              medicine_charges  DECIMAL(10, 2) DEFAULT 0.00,
+              total_amount      DECIMAL(10, 2) NOT NULL,
+              created_at        TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+              CONSTRAINT fk_bill_appointment FOREIGN KEY (appointment_id) REFERENCES appointments(id) ON DELETE CASCADE
+          );
+
+          -- Seed: Default Admin user (BCrypt hash of 'admin123')
+          INSERT IGNORE INTO users (username, password_hash, full_name, role)
+          VALUES ('admin', '$2a$10$7QJ8z1z1z1z1z1z1z1z1zOExampleHashReplaceThisWithReal', 'System Administrator', 'ADMIN');
+
+          -- Seed: Test Dentist for CI/CD test runs
+          INSERT IGNORE INTO users (username, password_hash, full_name, role)
+          VALUES ('dr_perera', '$2a$10$testHashForCIOnly', 'Dr. Kasun Perera', 'DENTIST');
+
           EOF
 
-      - name: Run Automated Tests
-        run: mvn clean test
+      - name: Run Automated Tests (JUnit 5 + Mockito)
+        run: mvn clean test --no-transfer-progress
         env:
-          DB_URL: "jdbc:mysql://localhost:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+          DB_URL: "jdbc:mysql://127.0.0.1:3306/sunrise_dental?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
           DB_USER: "root"
           DB_PASSWORD: "root1234"
 
+      - name: Upload Test Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-test-report
+          path: target/surefire-reports/
+          retention-days: 14
+
       - name: Build WAR Package
-        run: mvn package -DskipTests
+        run: mvn package -DskipTests --no-transfer-progress
 
       - name: Upload Deployment Artifact (.war)
         uses: actions/upload-artifact@v4
@@ -89,3 +132,26 @@ jobs:
           name: sunrise-dental-system-war
           path: target/*.war
           retention-days: 7
+
+  code-quality:
+    name: Code Quality Check
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up JDK 17 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run Checkstyle (Code Style Validation)
+        run: mvn checkstyle:check --no-transfer-progress || echo "⚠️ Checkstyle warnings found — review before merging."
+        continue-on-error: true
+
+      - name: Verify Build Integrity (Compile Only)
+        run: mvn compile --no-transfer-progress
