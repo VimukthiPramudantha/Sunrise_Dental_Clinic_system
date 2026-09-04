@@ -56,7 +56,6 @@
             color: white;
         }
 
-        /* Abstract shapes for left side background */
         .layout-left::before {
             content: '';
             position: absolute;
@@ -120,7 +119,6 @@
             line-height: 1.6;
         }
 
-        /* Right Side - Login Form */
         .layout-right {
             flex: 1;
             display: flex;
@@ -264,7 +262,6 @@
             color: var(--primary-hover);
         }
 
-        /* Responsive */
         @media (max-width: 900px) {
             .layout-left {
                 display: none;
