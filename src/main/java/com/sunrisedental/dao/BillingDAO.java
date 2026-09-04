@@ -70,7 +70,7 @@ public class BillingDAO {
                 "FROM bills b " +
                 "JOIN appointments a ON b.appointment_id = a.id " +
                 "JOIN patients p ON a.patient_id = p.patient_id " +
-                "JOIN dentists d ON a.dentist_id = d.id " +
+                "JOIN users d ON a.dentist_id = d.user_id " +
                 "WHERE b.invoice_no = ?";
 
         try (Connection conn = DatabaseConnectionManager.getInstance().getConnection();
