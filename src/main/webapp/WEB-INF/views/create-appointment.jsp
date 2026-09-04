@@ -292,8 +292,8 @@
                         <select id="dentistId" name="dentistId" class="form-control" required>
                             <option value="">-- Select Dentist --</option>
                             <c:forEach var="dentist" items="${dentists}">
-                                <option value="${dentist.id}">
-                                    Dr. ${dentist.fullName} (${dentist.specialization})
+                                <option value="${dentist.userId}">
+                                    Dr. ${dentist.fullName}
                                 </option>
                             </c:forEach>
                             <c:if test="${empty dentists}">

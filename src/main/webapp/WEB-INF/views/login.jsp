@@ -291,7 +291,6 @@
         </div>
     </div>
 
-    <!-- Right Side: Login Form -->
     <div class="layout-right">
         <div class="login-container">
             <div class="header">
