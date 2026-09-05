@@ -17,7 +17,6 @@ class UserSessionTest {
         UserSession.getInstance().cleanSession();
     }
 
-    // ── Singleton ────────────────────────────────────────────────────
 
     @Test
     @DisplayName("getInstance should always return the same instance")
@@ -33,7 +32,6 @@ class UserSessionTest {
         assertNotNull(UserSession.getInstance());
     }
 
-    // ── isLoggedIn() ─────────────────────────────────────────────────
 
     @Test
     @DisplayName("isLoggedIn should return false when no session is created")
@@ -49,7 +47,6 @@ class UserSessionTest {
         assertTrue(UserSession.getInstance().isLoggedIn());
     }
 
-    // ── createSession() / getCurrentUser() ───────────────────────────
 
     @Test
     @DisplayName("getCurrentUser should return null when no session exists")
@@ -84,7 +81,6 @@ class UserSessionTest {
         assertEquals("user2", UserSession.getInstance().getCurrentUser().getUsername());
     }
 
-    // ── cleanSession() ───────────────────────────────────────────────
 
     @Test
     @DisplayName("cleanSession should clear the current user")
@@ -104,8 +100,6 @@ class UserSessionTest {
         assertDoesNotThrow(() -> UserSession.getInstance().cleanSession());
         assertFalse(UserSession.getInstance().isLoggedIn());
     }
-
-    // ── Full Lifecycle ───────────────────────────────────────────────
 
     @Test
     @DisplayName("Full lifecycle: create → verify → clean → verify")

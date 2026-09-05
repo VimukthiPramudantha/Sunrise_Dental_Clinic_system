@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("User Model Tests")
 class UserTest {
 
-    // ── Constructor & Getters ────────────────────────────────────────
 
     @Test
     @DisplayName("Constructor should set all fields correctly")
@@ -55,7 +54,6 @@ class UserTest {
         assertEquals("Kamal Perera", user.getFullName());
     }
 
-    // ── Role Variants ────────────────────────────────────────────────
 
     @ParameterizedTest
     @EnumSource(Role.class)
@@ -91,7 +89,6 @@ class UserTest {
         assertFalse(user.getRole().canManageUsers());
     }
 
-    // ── Edge Cases ───────────────────────────────────────────────────
 
     @Test
     @DisplayName("User with empty string fields should not throw")

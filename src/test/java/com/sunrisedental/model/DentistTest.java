@@ -10,8 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Dentist Model Tests")
 class DentistTest {
 
-    // ── Default Constructor ──────────────────────────────────────────
-
     @Test
     @DisplayName("Default constructor should initialize id to 0 and other fields to null")
     void defaultConstructor_fieldsAreDefaults() {
@@ -21,8 +19,6 @@ class DentistTest {
         assertNull(dentist.getSpecialization());
         assertNull(dentist.getConsultationFee());
     }
-
-    // ── Parameterized Constructor ────────────────────────────────────
 
     @Test
     @DisplayName("Parameterized constructor should set all fields")
@@ -38,7 +34,6 @@ class DentistTest {
         );
     }
 
-    // ── ID ───────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("setId and getId should work correctly")
@@ -48,8 +43,6 @@ class DentistTest {
         assertEquals(99, dentist.getId());
     }
 
-    // ── Full Name ────────────────────────────────────────────────────
-
     @Test
     @DisplayName("setFullName and getFullName should work correctly")
     void setAndGetFullName() {
@@ -58,7 +51,6 @@ class DentistTest {
         assertEquals("Dr. Jayawardena", dentist.getFullName());
     }
 
-    // ── Specialization ───────────────────────────────────────────────
 
     @Test
     @DisplayName("setSpecialization and getSpecialization should work correctly")
@@ -67,8 +59,6 @@ class DentistTest {
         dentist.setSpecialization("Endodontics");
         assertEquals("Endodontics", dentist.getSpecialization());
     }
-
-    // ── Consultation Fee ─────────────────────────────────────────────
 
     @Test
     @DisplayName("setConsultationFee and getConsultationFee should handle BigDecimal")
@@ -87,7 +77,6 @@ class DentistTest {
         assertEquals(BigDecimal.ZERO, dentist.getConsultationFee());
     }
 
-    // ── Setters Override Constructor Values ──────────────────────────
 
     @Test
     @DisplayName("Setters should override values set by parameterized constructor")

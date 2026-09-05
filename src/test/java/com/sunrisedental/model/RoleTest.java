@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("Role Enum Tests")
 class RoleTest {
 
-    // ── values() ─────────────────────────────────────────────────────
 
     @Test
     @DisplayName("Role enum should have exactly 3 constants")
@@ -28,7 +27,6 @@ class RoleTest {
         );
     }
 
-    // ── getRoleName() ────────────────────────────────────────────────
 
     @Test
     @DisplayName("ADMIN getRoleName should return 'ADMIN'")
@@ -48,8 +46,6 @@ class RoleTest {
         assertEquals("DENTIST", Role.DENTIST.getRoleName());
     }
 
-    // ── fromString() — Valid Inputs ──────────────────────────────────
-
     @Test
     @DisplayName("fromString('ADMIN') should return Role.ADMIN")
     void fromString_admin() {
@@ -68,7 +64,6 @@ class RoleTest {
         assertEquals(Role.DENTIST, Role.fromString("DENTIST"));
     }
 
-    // ── fromString() — Case Insensitive ──────────────────────────────
 
     @ParameterizedTest
     @ValueSource(strings = {"admin", "Admin", "ADMIN", "aDmIn"})
@@ -91,7 +86,6 @@ class RoleTest {
         assertEquals(Role.DENTIST, Role.fromString(input));
     }
 
-    // ── fromString() — Invalid Inputs ────────────────────────────────
 
     @Test
     @DisplayName("fromString with invalid role should throw IllegalArgumentException")
@@ -115,8 +109,6 @@ class RoleTest {
         assertThrows(Exception.class, () -> Role.fromString(null));
     }
 
-    // ── canManageAppointments() ──────────────────────────────────────
-
     @Test
     @DisplayName("ADMIN can manage appointments")
     void admin_canManageAppointments() {
@@ -135,7 +127,6 @@ class RoleTest {
         assertFalse(Role.DENTIST.canManageAppointments());
     }
 
-    // ── canManageBilling() ───────────────────────────────────────────
 
     @Test
     @DisplayName("ADMIN can manage billing")
@@ -155,7 +146,6 @@ class RoleTest {
         assertFalse(Role.DENTIST.canManageBilling());
     }
 
-    // ── canManageUsers() ─────────────────────────────────────────────
 
     @Test
     @DisplayName("ADMIN can manage users")

@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("PasswordUtil Tests")
 class PasswordUtilTest {
 
-    // ── hashPassword() ───────────────────────────────────────────────
 
     @Test
     @DisplayName("hashPassword should return a non-null string")
@@ -66,7 +65,6 @@ class PasswordUtilTest {
         assertEquals(64, hash.length());
     }
 
-    // ── verifyPassword() ─────────────────────────────────────────────
 
     @Test
     @DisplayName("verifyPassword should return true for matching password")
@@ -104,7 +102,6 @@ class PasswordUtilTest {
         assertFalse(PasswordUtil.verifyPassword("", hash));
     }
 
-    // ── Known SHA-256 Value ──────────────────────────────────────────
 
     @Test
     @DisplayName("hashPassword('password') should match known SHA-256 digest")

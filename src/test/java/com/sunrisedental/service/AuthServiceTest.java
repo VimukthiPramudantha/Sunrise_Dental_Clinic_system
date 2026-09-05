@@ -36,10 +36,6 @@ class AuthServiceTest {
         UserSession.getInstance().cleanSession();
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  LOGIN TESTS
-    // ═══════════════════════════════════════════════════════════════
-
     @Nested
     @DisplayName("Login")
     class LoginTests {
@@ -151,9 +147,6 @@ class AuthServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  REGISTRATION TESTS
-    // ═══════════════════════════════════════════════════════════════
 
     @Nested
     @DisplayName("Register User")
@@ -297,9 +290,6 @@ class AuthServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  LOGOUT TESTS
-    // ═══════════════════════════════════════════════════════════════
 
     @Nested
     @DisplayName("Logout")
@@ -329,9 +319,6 @@ class AuthServiceTest {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════════
-    //  CONSTRUCTOR TESTS
-    // ═══════════════════════════════════════════════════════════════
 
     @Nested
     @DisplayName("Constructor")
