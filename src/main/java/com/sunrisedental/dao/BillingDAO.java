@@ -21,11 +21,10 @@ public class BillingDAO {
             conn = DatabaseConnectionManager.getInstance().getConnection();
             conn.setAutoCommit(false);
 
-            // Calculate total: Consultation + Treatment + Additional/Medicine
             BigDecimal total = consultationFee.add(treatmentCost).add(medicineCharges);
 
             stmt = conn.prepareStatement(insertSql, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, "TEMP"); // Temporary placeholder
+            stmt.setString(1, "TEMP"); 
             stmt.setInt(2, appointmentId);
             stmt.setBigDecimal(3, consultationFee);
             stmt.setBigDecimal(4, treatmentCost);

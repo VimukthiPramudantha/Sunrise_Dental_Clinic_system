@@ -20,7 +20,6 @@ class BillTest {
         bill = new Bill();
     }
 
-    // ── Default Constructor ──────────────────────────────────────────
 
     @Test
     @DisplayName("Default constructor should initialize numeric fields to 0")
@@ -53,7 +52,6 @@ class BillTest {
         assertNull(bill.getCreatedAt());
     }
 
-    // ── ID ───────────────────────────────────────────────────────────
 
     @Test
     @DisplayName("setId and getId should work correctly")
@@ -62,16 +60,12 @@ class BillTest {
         assertEquals(101, bill.getId());
     }
 
-    // ── Invoice No ───────────────────────────────────────────────────
-
     @Test
     @DisplayName("setInvoiceNo and getInvoiceNo should work correctly")
     void setAndGetInvoiceNo() {
         bill.setInvoiceNo("INV-05001");
         assertEquals("INV-05001", bill.getInvoiceNo());
     }
-
-    // ── Appointment ID ───────────────────────────────────────────────
 
     @Test
     @DisplayName("setAppointmentId and getAppointmentId should work correctly")
@@ -80,16 +74,12 @@ class BillTest {
         assertEquals(55, bill.getAppointmentId());
     }
 
-    // ── Appointment No ───────────────────────────────────────────────
-
     @Test
     @DisplayName("setAppointmentNo and getAppointmentNo should work correctly")
     void setAndGetAppointmentNo() {
         bill.setAppointmentNo("APP-1005");
         assertEquals("APP-1005", bill.getAppointmentNo());
     }
-
-    // ── Patient Name ─────────────────────────────────────────────────
 
     @Test
     @DisplayName("setPatientName and getPatientName should work correctly")
@@ -98,16 +88,12 @@ class BillTest {
         assertEquals("Kamal Silva", bill.getPatientName());
     }
 
-    // ── Dentist Name ─────────────────────────────────────────────────
-
     @Test
     @DisplayName("setDentistName and getDentistName should work correctly")
     void setAndGetDentistName() {
         bill.setDentistName("Dr. Fernando");
         assertEquals("Dr. Fernando", bill.getDentistName());
     }
-
-    // ── Consultation Fee ─────────────────────────────────────────────
 
     @Test
     @DisplayName("setConsultationFee and getConsultationFee should handle BigDecimal")
@@ -117,8 +103,6 @@ class BillTest {
         assertEquals(fee, bill.getConsultationFee());
     }
 
-    // ── Treatment Cost ───────────────────────────────────────────────
-
     @Test
     @DisplayName("setTreatmentCost and getTreatmentCost should handle BigDecimal")
     void setAndGetTreatmentCost() {
@@ -126,8 +110,6 @@ class BillTest {
         bill.setTreatmentCost(cost);
         assertEquals(cost, bill.getTreatmentCost());
     }
-
-    // ── Medicine Charges ─────────────────────────────────────────────
 
     @Test
     @DisplayName("setMedicineCharges and getMedicineCharges should handle BigDecimal")
@@ -143,8 +125,6 @@ class BillTest {
         bill.setMedicineCharges(BigDecimal.ZERO);
         assertEquals(BigDecimal.ZERO, bill.getMedicineCharges());
     }
-
-    // ── Total Amount ─────────────────────────────────────────────────
 
     @Test
     @DisplayName("setTotalAmount and getTotalAmount should handle BigDecimal")
@@ -170,8 +150,6 @@ class BillTest {
         assertEquals(new BigDecimal("7250.00"), bill.getTotalAmount());
     }
 
-    // ── Created At ───────────────────────────────────────────────────
-
     @Test
     @DisplayName("setCreatedAt and getCreatedAt should handle Timestamp")
     void setAndGetCreatedAt() {
@@ -186,8 +164,6 @@ class BillTest {
         bill.setCreatedAt(null);
         assertNull(bill.getCreatedAt());
     }
-
-    // ── Full Object Wiring ───────────────────────────────────────────
 
     @Test
     @DisplayName("All fields should be settable and retrievable on the same instance")

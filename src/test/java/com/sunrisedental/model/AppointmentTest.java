@@ -18,8 +18,6 @@ class AppointmentTest {
         appointment = new Appointment();
     }
 
-    // ── Default Constructor ──────────────────────────────────────────
-
     @Test
     @DisplayName("Default constructor should initialize numeric fields to 0")
     void defaultConstructor_numericFieldsAreZero() {
@@ -46,16 +44,12 @@ class AppointmentTest {
         assertNull(appointment.getAppointmentDate());
     }
 
-    // ── ID ───────────────────────────────────────────────────────────
-
     @Test
     @DisplayName("setId and getId should work correctly")
     void setAndGetId() {
         appointment.setId(42);
         assertEquals(42, appointment.getId());
     }
-
-    // ── Appointment No ───────────────────────────────────────────────
 
     @Test
     @DisplayName("setAppointmentNo and getAppointmentNo should work correctly")
@@ -64,16 +58,12 @@ class AppointmentTest {
         assertEquals("APP-1001", appointment.getAppointmentNo());
     }
 
-    // ── Patient ID ───────────────────────────────────────────────────
-
     @Test
     @DisplayName("setPatientId and getPatientId should work correctly")
     void setAndGetPatientId() {
         appointment.setPatientId(10);
         assertEquals(10, appointment.getPatientId());
     }
-
-    // ── Patient Name ─────────────────────────────────────────────────
 
     @Test
     @DisplayName("setPatientName and getPatientName should work correctly")
@@ -82,16 +72,12 @@ class AppointmentTest {
         assertEquals("John Doe", appointment.getPatientName());
     }
 
-    // ── Patient Phone ────────────────────────────────────────────────
-
     @Test
     @DisplayName("setPatientPhone and getPatientPhone should work correctly")
     void setAndGetPatientPhone() {
         appointment.setPatientPhone("+94771234567");
         assertEquals("+94771234567", appointment.getPatientPhone());
     }
-
-    // ── Dentist ID ───────────────────────────────────────────────────
 
     @Test
     @DisplayName("setDentistId and getDentistId should work correctly")
@@ -100,8 +86,6 @@ class AppointmentTest {
         assertEquals(5, appointment.getDentistId());
     }
 
-    // ── Dentist Name ─────────────────────────────────────────────────
-
     @Test
     @DisplayName("setDentistName and getDentistName should work correctly")
     void setAndGetDentistName() {
@@ -109,16 +93,12 @@ class AppointmentTest {
         assertEquals("Dr. Smith", appointment.getDentistName());
     }
 
-    // ── Treatment Type ───────────────────────────────────────────────
-
     @Test
     @DisplayName("setTreatmentType and getTreatmentType should work correctly")
     void setAndGetTreatmentType() {
         appointment.setTreatmentType("Root Canal");
         assertEquals("Root Canal", appointment.getTreatmentType());
     }
-
-    // ── Appointment Date ─────────────────────────────────────────────
 
     @Test
     @DisplayName("setAppointmentDate and getAppointmentDate should work with java.sql.Date")
@@ -135,16 +115,12 @@ class AppointmentTest {
         assertNull(appointment.getAppointmentDate());
     }
 
-    // ── Time Slot ────────────────────────────────────────────────────
-
     @Test
     @DisplayName("setTimeSlot and getTimeSlot should work correctly")
     void setAndGetTimeSlot() {
         appointment.setTimeSlot("09:00 AM - 10:00 AM");
         assertEquals("09:00 AM - 10:00 AM", appointment.getTimeSlot());
     }
-
-    // ── Status ───────────────────────────────────────────────────────
 
     @Test
     @DisplayName("setStatus and getStatus should work correctly")
@@ -162,8 +138,6 @@ class AppointmentTest {
             assertEquals(status, appointment.getStatus());
         }
     }
-
-    // ── Full Object Wiring ───────────────────────────────────────────
 
     @Test
     @DisplayName("All fields should be settable and retrievable on the same instance")

@@ -13,7 +13,7 @@ public class Appointment {
     private String treatmentType;
     private Date appointmentDate;
     private String timeSlot;
-    private String status; // ADDED: Field declaration
+    private String status; 
 
     public Appointment() {}
 
